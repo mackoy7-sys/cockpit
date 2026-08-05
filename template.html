@@ -480,14 +480,15 @@ const tRows = convKeys.map(k=>{
     '<td>'+(d?fmtR(d.fat):'—')+'</td>'+
     '<td>'+(d?('R$ '+(d.fat/d.vol).toLocaleString('pt-BR',{maximumFractionDigits:2})):'—')+'</td>'+
     '<td>'+(c?fmtN(c.leads):'—')+'</td>'+
-    '<td>'+(c?fmtP(cvPct(k)):'—')+'</td>'+
+    '<td>'+(c?fmtP(100*c.vidas/c.leads):'—')+'</td>'+
+    '<td>'+(c?fmtP(100*(c.vidas-c.sint)/c.leads):'—')+'</td>'+
     '<td>'+(c&&c.sint?fmtN(c.sint):'—')+'</td>'+
     '<td>'+(s?fmtP(s.pct_sla):'—')+'</td>'+
     '<td>'+(dj?fmtN(dj.realizado)+' / '+fmtN(dj.meta):'—')+'</td></tr>';
 }).join('');
 document.getElementById('tbl').innerHTML =
-  '<tr><th>Mês</th><th>Vendas (vidas)</th><th>Faturamento</th><th>Ticket</th><th>Leads</th><th>Conversão'+(SINTRO?'':' s/ Sintro')+'</th><th>Vidas Sintro</th><th>SLA</th><th>RMSP real / meta</th></tr>'+
-  tRows+'<tr><td colspan="9" style="text-align:left;color:var(--muted)">* prévia da base de Conversão (mês ainda não consolidado na base oficial Vendas Digital). Vendas (vidas) sempre inclui Sintro; o filtro afeta só a coluna Conversão.</td></tr>';
+  '<tr><th>Mês</th><th>Vendas (vidas)</th><th>Faturamento</th><th>Ticket</th><th>Leads</th><th>Conversão</th><th>Conv. s/ Sintro</th><th>Vidas Sintro</th><th>SLA</th><th>RMSP real / meta</th></tr>'+
+  tRows+'<tr><td colspan="10" style="text-align:left;color:var(--muted)">* prévia da base de Conversão (mês ainda não consolidado na base oficial Vendas Digital). Vendas (vidas) sempre inclui Sintro; "Conv. s/ Sintro" exclui as vidas Sintro do numerador.</td></tr>';
 }
 renderTable();
 
