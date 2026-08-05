@@ -115,11 +115,20 @@ def agg_diaria():
         partes = label.split(' ')
         hoje = datetime.now()
         parcial = (MESN.get(partes[0]) == hoje.month and partes[-1] == str(hoje.year))
+        # leads × conversão por fila/origem do mês
+        filas = []
+        lc = re.search(r'leadsConversao:\s*\[(.*?)\]', seg, re.S)
+        if lc:
+            for fm in re.finditer(r'\{\s*origem:\s*"([^"]+)",\s*leads:\s*(\d+),\s*produtivos:\s*(\d+),'
+                                  r'\s*contratos:\s*(\d+),\s*vidas:\s*(\d+)', lc.group(1)):
+                filas.append(dict(fila=fm.group(1), leads=int(fm.group(2)), prod=int(fm.group(3)),
+                                  contratos=int(fm.group(4)), vidas=int(fm.group(5))))
         out[key] = dict(label=label, meta=float(meta.group(1)) if meta else None,
                         realizado=acum[-1] if acum else None, dia_real=dia_real,
                         dias_no_mes=len(acum), parcial=parcial,
                         pf=int(pf.group(1)) if pf else 0, pme=int(pme.group(1)) if pme else 0,
-                        adesao=int(ad.group(1)) if ad else 0)
+                        adesao=int(ad.group(1)) if ad else 0,
+                        mes_num=MESN.get(partes[0]), filas=filas)
     return out
 
 # ────────────────────────────────────────────────────────────────────
