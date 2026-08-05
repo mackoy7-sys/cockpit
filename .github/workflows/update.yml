@@ -1,0 +1,37 @@
+name: Atualiza Cockpit
+
+on:
+  schedule:
+    - cron: '0 10 * * *'   # 07:00 em Brasília, todos os dias
+  workflow_dispatch:        # permite disparo manual na aba Actions
+
+permissions:
+  contents: write
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    env:
+      TZ: America/Sao_Paulo
+      COCKPIT_REMOTE: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Gera o cockpit com dados atuais
+        run: python3 build_cockpit.py
+
+      - name: Commita se os dados mudaram
+        run: |
+          git config user.name "cockpit-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "Sem mudanças nos dados — nada a publicar."
+          else
+            git commit -m "Atualização automática — $(date +%d/%m/%Y' '%H:%M)"
+            git push
+          fi
