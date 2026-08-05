@@ -2,7 +2,7 @@ name: Atualiza Cockpit
 
 on:
   schedule:
-    - cron: '0 10 * * *'   # 07:00 em Brasília, todos os dias
+    - cron: '0 17 * * *'   # 14:00 em Brasília, todos os dias
   workflow_dispatch:        # permite disparo manual na aba Actions
 
 permissions:
