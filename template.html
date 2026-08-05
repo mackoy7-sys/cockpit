@@ -11,7 +11,7 @@
   color-scheme: light;
   --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
   --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10);
-  --s1:#2a78d6; --s2:#eb6834; --s2-soft:rgba(235,104,52,.35);
+  --s1:#2a78d6; --s2:#eb6834; --s2-soft:rgba(235,104,52,.35); --s3:#1baf7a;
   --good:#006300; --bad:#d03b3b;
   --navy:#0f2f52;
 }
@@ -20,7 +20,7 @@
     color-scheme: dark;
     --page:#0d0d0d; --surface:#1a1a19; --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
     --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
-    --s1:#3987e5; --s2:#d95926; --s2-soft:rgba(217,89,38,.35);
+    --s1:#3987e5; --s2:#d95926; --s2-soft:rgba(217,89,38,.35); --s3:#199e70;
     --good:#0ca30c; --bad:#e66767;
     --navy:#0a2039;
   }
@@ -71,6 +71,11 @@ footer{max-width:1240px;margin:0 auto;padding:0 22px 30px;font-size:11.5px;color
 .seg span{font-size:11.5px;color:var(--ink-2);padding:4px 8px;align-self:center}
 .seg button{font-size:11.5px;font-family:inherit;border:0;background:transparent;color:var(--ink-2);padding:4px 12px;cursor:pointer}
 .seg button.on{background:var(--s1);color:#fff;font-weight:600}
+.filagrid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:900px){.filagrid{grid-template-columns:1fr}}
+.subttl{font-size:12.5px;color:var(--ink-2);font-weight:600;margin:2px 0 6px}
+.chart-box.xtall{height:400px}
+details.inner{border:0;background:transparent;padding:10px 0 0;margin:0}
 </style>
 </head>
 <body>
@@ -118,6 +123,21 @@ footer{max-width:1240px;margin:0 auto;padding:0 22px 30px;font-size:11.5px;color
       </div>
       <div class="hint">Sempre agregada (nunca média das taxas individuais). Sintro = vendas de projetos que não passam pelo funil de leads — "Não" as exclui do numerador. O filtro também recalcula o KPI e a tabela.</div>
       <div class="chart-box short"><canvas id="chConv"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card" style="grid-column:1/-1">
+      <h2>Leads × Conversão por fila — mês a mês</h2>
+      <div class="hint" id="hintFila"></div>
+      <div class="filagrid">
+        <div><div class="subttl">Volume de leads</div><div class="chart-box xtall"><canvas id="chFilaLeads"></canvas></div></div>
+        <div><div class="subttl">Conversão — Σvidas ÷ Σleads</div><div class="chart-box xtall"><canvas id="chFilaConv"></canvas></div></div>
+      </div>
+      <details class="inner">
+        <summary>Tabela completa por fila</summary>
+        <div style="overflow-x:auto"><table id="tblFila"></table></div>
+      </details>
     </div>
   </div>
 
@@ -341,6 +361,69 @@ function setSintro(v){
   renderTiles();
   renderTable();
 }
+
+// ── Leads × Conversão por fila (desde Junho; máx. 3 meses = paleta validada) ──
+const fMeses = Object.values(dia)
+  .filter(d=>d.filas && d.filas.length && d.mes_num>=6)
+  .sort((a,b)=>a.mes_num-b.mes_num).slice(-3);
+const fCores = [C.s1, C.s2, css('--s3')];
+const fLabel = d=>d.label.split(' ')[0]+(d.parcial?' (parcial)':'');
+// ordena filas pelo volume de leads do último mês FECHADO (fallback: último)
+const fRef = [...fMeses].reverse().find(d=>!d.parcial) || fMeses[fMeses.length-1];
+const fOrdem = [...fRef.filas].sort((a,b)=>b.leads-a.leads).map(f=>f.fila);
+// inclui filas que só existem em outros meses (vão para o fim)
+fMeses.forEach(d=>d.filas.forEach(f=>{ if(!fOrdem.includes(f.fila)) fOrdem.push(f.fila); }));
+const TOPN = 9;
+const fTop = fOrdem.slice(0, TOPN);
+const fResto = fOrdem.slice(TOPN);
+const fRotulos = fResto.length ? [...fTop, 'Demais filas ('+fResto.length+')'] : fTop;
+const fVal = (d, fila, campo) => {                       // valor de um campo p/ fila (ou agregado das demais)
+  if(fila.startsWith('Demais filas')) return fResto.reduce((s,fl)=>{
+    const x=d.filas.find(f=>f.fila===fl); return s+(x?x[campo]:0);},0);
+  const x = d.filas.find(f=>f.fila===fila); return x ? x[campo] : 0;
+};
+const fConv = (d, fila) => { const l=fVal(d,fila,'leads'); return l ? 100*fVal(d,fila,'vidas')/l : 0; };
+
+document.getElementById('hintFila').textContent =
+  'Leads distribuídos e conversão em vidas por fila de origem ('+
+  fMeses.map(fLabel).join(' · ')+' — base Vendas Diária/Conversão). Barras agrupadas por mês; "Demais filas" agrega as menores.';
+
+new Chart(chFilaLeads, {type:'bar', data:{labels:fRotulos, datasets:fMeses.map((d,i)=>(
+  {label:fLabel(d), data:fRotulos.map(f=>fVal(d,f,'leads')), backgroundColor:fCores[i],
+   borderRadius:3, maxBarThickness:14,
+   datalabels:{display:c=>c.dataset.data[c.dataIndex]>0, anchor:'end', align:'end',
+     color:C.ink2, font:{size:9.5}, formatter:fmtK}}))},
+ options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, layout:{padding:{right:40}},
+  plugins:{legend:{position:'top', align:'end'},
+    tooltip:{callbacks:{label:c=>{
+      const d=fMeses[c.datasetIndex], f=fRotulos[c.dataIndex];
+      return ' '+c.dataset.label+': '+fmtN(c.raw)+' leads · '+fmtN(fVal(d,f,'vidas'))+' vidas';}}}},
+  scales:{x:{grid:{color:C.grid}, border:{display:false}, ticks:{callback:fmtK}},
+          y:{grid:{display:false}, border:{color:C.axis}}}
+}});
+
+new Chart(chFilaConv, {type:'bar', data:{labels:fRotulos, datasets:fMeses.map((d,i)=>(
+  {label:fLabel(d), data:fRotulos.map(f=>fConv(d,f)), backgroundColor:fCores[i],
+   borderRadius:3, maxBarThickness:14,
+   datalabels:{display:c=>c.dataset.data[c.dataIndex]>0, anchor:'end', align:'end',
+     color:C.ink2, font:{size:9.5}, formatter:v=>fmtP(v)}}))},
+ options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, layout:{padding:{right:46}},
+  plugins:{legend:{position:'top', align:'end'},
+    tooltip:{callbacks:{label:c=>{
+      const d=fMeses[c.datasetIndex], f=fRotulos[c.dataIndex];
+      return ' '+c.dataset.label+': '+fmtP(c.raw)+' ('+fmtN(fVal(d,f,'vidas'))+' vidas / '+fmtN(fVal(d,f,'leads'))+' leads)';}}}},
+  scales:{x:{grid:{color:C.grid}, border:{display:false}, ticks:{callback:v=>v+'%'}},
+          y:{grid:{display:false}, border:{color:C.axis}}}
+}});
+
+// tabela completa por fila (todas, sem agregação)
+document.getElementById('tblFila').innerHTML =
+  '<tr><th>Fila</th>'+fMeses.map(d=>'<th colspan="3">'+fLabel(d)+'</th>').join('')+'</tr>'+
+  '<tr><th></th>'+fMeses.map(()=>'<th>Leads</th><th>Vidas</th><th>Conv.</th>').join('')+'</tr>'+
+  fOrdem.map(f=>'<tr><td>'+f+'</td>'+fMeses.map(d=>{
+    const l=fVal(d,f,'leads'), v=fVal(d,f,'vidas');
+    return '<td>'+(l?fmtN(l):'—')+'</td><td>'+(l?fmtN(v):'—')+'</td><td>'+(l?fmtP(100*v/l):'—')+'</td>';
+  }).join('')+'</tr>').join('');
 
 // ── SLA tiles ──
 document.getElementById('slaTiles').innerHTML = slaMeses.map(m=>{
