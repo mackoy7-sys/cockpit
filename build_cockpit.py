@@ -169,11 +169,12 @@ def main():
     print('3/4 Conversão…'); conv, dt_conv = agg_conversao()
     print('4/4 SLA/Atendimento…'); sla, dt_sla = agg_sla()
 
+    MES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
     data = dict(
         gerado_em=datetime.now().strftime('%d/%m/%Y %H:%M'),
         mes_atual=datetime.now().strftime('%Y-%m'),
         digital=dig, diaria=dia, conv=conv, sla=sla,
-        cortes=dict(digital=f"Jun/2026", conv=dt_conv, sla=dt_sla),
+        cortes=dict(digital=f"{MES_ABREV[dig['ult_mes_26']-1]}/2026", conv=dt_conv, sla=dt_sla),
     )
     tpl = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'template.html'),
                encoding='utf-8').read()
