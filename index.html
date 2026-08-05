@@ -11,7 +11,7 @@
   color-scheme: light;
   --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
   --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10);
-  --s1:#2a78d6; --s2:#eb6834; --s2-soft:rgba(235,104,52,.35);
+  --s1:#2a78d6; --s2:#eb6834; --s2-soft:rgba(235,104,52,.35); --s3:#1baf7a;
   --good:#006300; --bad:#d03b3b;
   --navy:#0f2f52;
 }
@@ -20,7 +20,7 @@
     color-scheme: dark;
     --page:#0d0d0d; --surface:#1a1a19; --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
     --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
-    --s1:#3987e5; --s2:#d95926; --s2-soft:rgba(217,89,38,.35);
+    --s1:#3987e5; --s2:#d95926; --s2-soft:rgba(217,89,38,.35); --s3:#199e70;
     --good:#0ca30c; --bad:#e66767;
     --navy:#0a2039;
   }
@@ -71,6 +71,11 @@ footer{max-width:1240px;margin:0 auto;padding:0 22px 30px;font-size:11.5px;color
 .seg span{font-size:11.5px;color:var(--ink-2);padding:4px 8px;align-self:center}
 .seg button{font-size:11.5px;font-family:inherit;border:0;background:transparent;color:var(--ink-2);padding:4px 12px;cursor:pointer}
 .seg button.on{background:var(--s1);color:#fff;font-weight:600}
+.filagrid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:900px){.filagrid{grid-template-columns:1fr}}
+.subttl{font-size:12.5px;color:var(--ink-2);font-weight:600;margin:2px 0 6px}
+.chart-box.xtall{height:400px}
+details.inner{border:0;background:transparent;padding:10px 0 0;margin:0}
 </style>
 </head>
 <body>
@@ -122,6 +127,21 @@ footer{max-width:1240px;margin:0 auto;padding:0 22px 30px;font-size:11.5px;color
   </div>
 
   <div class="grid2">
+    <div class="card" style="grid-column:1/-1">
+      <h2>Leads × Conversão por fila — mês a mês</h2>
+      <div class="hint" id="hintFila"></div>
+      <div class="filagrid">
+        <div><div class="subttl">Volume de leads</div><div class="chart-box xtall"><canvas id="chFilaLeads"></canvas></div></div>
+        <div><div class="subttl">Conversão — Σvidas ÷ Σleads</div><div class="chart-box xtall"><canvas id="chFilaConv"></canvas></div></div>
+      </div>
+      <details class="inner">
+        <summary>Tabela completa por fila</summary>
+        <div style="overflow-x:auto"><table id="tblFila"></table></div>
+      </details>
+    </div>
+  </div>
+
+  <div class="grid2">
     <div class="card">
       <h2>SLA de Atendimento</h2>
       <div class="hint">% de leads atendidos dentro do SLA e em até 2 minutos.</div>
@@ -156,7 +176,7 @@ footer{max-width:1240px;margin:0 auto;padding:0 22px 30px;font-size:11.5px;color
 <footer id="foot"></footer>
 
 <script>
-const DATA = {"gerado_em": "04/08/2026 22:16", "mes_atual": "2026-08", "digital": {"mensal": {"2025-01": {"vol": 5402, "fat": 1899759, "canc": 2852}, "2025-02": {"vol": 5420, "fat": 1877847, "canc": 2831}, "2025-03": {"vol": 6065, "fat": 2089478, "canc": 3138}, "2025-04": {"vol": 6079, "fat": 2091262, "canc": 2854}, "2025-05": {"vol": 6828, "fat": 2234601, "canc": 2967}, "2025-06": {"vol": 7848, "fat": 2576341, "canc": 3258}, "2025-07": {"vol": 8522, "fat": 2748678, "canc": 3556}, "2025-08": {"vol": 8770, "fat": 3076911, "canc": 3349}, "2025-09": {"vol": 9675, "fat": 3307250, "canc": 3461}, "2025-10": {"vol": 9454, "fat": 3371571, "canc": 3089}, "2025-11": {"vol": 8259, "fat": 2737490, "canc": 2376}, "2025-12": {"vol": 7244, "fat": 2461398, "canc": 1644}, "2026-01": {"vol": 8310, "fat": 2714403, "canc": 706}, "2026-02": {"vol": 7621, "fat": 2472570, "canc": 433}, "2026-03": {"vol": 10822, "fat": 3578333, "canc": 416}, "2026-04": {"vol": 8997, "fat": 3057501, "canc": 155}, "2026-05": {"vol": 10503, "fat": 3480166, "canc": 54}, "2026-06": {"vol": 13349, "fat": 4225367, "canc": 150}, "2026-07": {"vol": 8807, "fat": 2855068, "canc": 24}}, "canal26": [{"nome": "01-INDIVIDUAL", "vol": 37515}, {"nome": "02-PIM (IND/3-29 VIDAS)", "vol": 22421}, {"nome": "07-ADMINISTRADORA", "vol": 7507}, {"nome": "03-MIDDLE I(30-99 VIDAS)", "vol": 906}, {"nome": "04-MIDDLE II(100-299 VIDAS)", "vol": 52}, {"nome": "05-CORPORE (ALEM DE 300 VIDAS)", "vol": 8}], "uf26": [{"uf": "SP", "vol": 25931, "fat": 8199177}, {"uf": "RN", "vol": 6613, "fat": 1997772}, {"uf": "MG", "vol": 4266, "fat": 1126824}, {"uf": "GO", "vol": 3812, "fat": 1206711}, {"uf": "BA", "vol": 3770, "fat": 1526741}, {"uf": "CE", "vol": 3614, "fat": 1603976}, {"uf": "RJ", "vol": 3141, "fat": 948148}, {"uf": "PE", "vol": 3047, "fat": 1070154}], "diretoria": {"2025-HMO": {"vol": 89040, "tk": 338.36}, "2025-PPO": {"vol": 526, "tk": 655.6}, "2026-HMO": {"vol": 67756, "tk": 323.96}, "2026-PPO": {"vol": 653, "tk": 663.2}}, "ult_mes_26": 7, "comp": {"v25": 46164, "f25": 15517966, "v26": 68409, "f26": 22383408, "canc26": 1938}}, "diaria": {"ABRIL": {"label": "Abril 2026", "meta": 11600.0, "realizado": 8996, "dia_real": 30, "dias_no_mes": 30, "parcial": false, "pf": 5631, "pme": 3247, "adesao": 118}, "MAIO": {"label": "Maio 2026", "meta": 11600.0, "realizado": 10569, "dia_real": 31, "dias_no_mes": 31, "parcial": false, "pf": 6417, "pme": 3686, "adesao": 466}, "JUNHO": {"label": "Junho 2026", "meta": 12360.0, "realizado": 8981, "dia_real": 30, "dias_no_mes": 30, "parcial": false, "pf": 5959, "pme": 2636, "adesao": 386}, "JULHO": {"label": "Julho 2026", "meta": 12540.0, "realizado": 7711, "dia_real": 31, "dias_no_mes": 31, "parcial": false, "pf": 4595, "pme": 2790, "adesao": 326}, "AGOSTO": {"label": "Agosto 2026", "meta": 12570.0, "realizado": 685, "dia_real": 30, "dias_no_mes": 31, "parcial": true, "pf": 278, "pme": 384, "adesao": 23}}, "conv": {"2026-01": {"leads": 138009, "vidas": 8310, "sint": 0, "vinc": 5551, "vinc_sint": 0}, "2026-02": {"leads": 121558, "vidas": 7621, "sint": 0, "vinc": 5416, "vinc_sint": 0}, "2026-03": {"leads": 154032, "vidas": 10822, "sint": 0, "vinc": 7644, "vinc_sint": 0}, "2026-04": {"leads": 127494, "vidas": 8997, "sint": 0, "vinc": 6988, "vinc_sint": 0}, "2026-05": {"leads": 130237, "vidas": 10565, "sint": 0, "vinc": 7703, "vinc_sint": 0}, "2026-06": {"leads": 107039, "vidas": 13349, "sint": 4351, "vinc": 7506, "vinc_sint": 162}, "2026-07": {"leads": 131959, "vidas": 9415, "sint": 1704, "vinc": 5624, "vinc_sint": 1}, "2026-08": {"leads": 9208, "vidas": 687, "sint": 2, "vinc": 555, "vinc_sint": 0}}, "sla": {"2026-06": {"leads": 125727, "pct_sla": 83.9, "pct_2min": 52.9}, "2026-07": {"leads": 160656, "pct_sla": 84.7, "pct_2min": 51.3}, "2026-08": {"leads": 9838, "pct_sla": 83.8, "pct_2min": 42.5}}, "cortes": {"digital": "Jul/2026", "conv": "2026-08-04", "sla": "2026-08-03"}};
+const DATA = {"gerado_em": "04/08/2026 22:29", "mes_atual": "2026-08", "digital": {"mensal": {"2025-01": {"vol": 5402, "fat": 1899759, "canc": 2852}, "2025-02": {"vol": 5420, "fat": 1877847, "canc": 2831}, "2025-03": {"vol": 6065, "fat": 2089478, "canc": 3138}, "2025-04": {"vol": 6079, "fat": 2091262, "canc": 2854}, "2025-05": {"vol": 6828, "fat": 2234601, "canc": 2967}, "2025-06": {"vol": 7848, "fat": 2576341, "canc": 3258}, "2025-07": {"vol": 8522, "fat": 2748678, "canc": 3556}, "2025-08": {"vol": 8770, "fat": 3076911, "canc": 3349}, "2025-09": {"vol": 9675, "fat": 3307250, "canc": 3461}, "2025-10": {"vol": 9454, "fat": 3371571, "canc": 3089}, "2025-11": {"vol": 8259, "fat": 2737490, "canc": 2376}, "2025-12": {"vol": 7244, "fat": 2461398, "canc": 1644}, "2026-01": {"vol": 8310, "fat": 2714403, "canc": 706}, "2026-02": {"vol": 7621, "fat": 2472570, "canc": 433}, "2026-03": {"vol": 10822, "fat": 3578333, "canc": 416}, "2026-04": {"vol": 8997, "fat": 3057501, "canc": 155}, "2026-05": {"vol": 10503, "fat": 3480166, "canc": 54}, "2026-06": {"vol": 13349, "fat": 4225367, "canc": 150}, "2026-07": {"vol": 8807, "fat": 2855068, "canc": 24}}, "canal26": [{"nome": "01-INDIVIDUAL", "vol": 37515}, {"nome": "02-PIM (IND/3-29 VIDAS)", "vol": 22421}, {"nome": "07-ADMINISTRADORA", "vol": 7507}, {"nome": "03-MIDDLE I(30-99 VIDAS)", "vol": 906}, {"nome": "04-MIDDLE II(100-299 VIDAS)", "vol": 52}, {"nome": "05-CORPORE (ALEM DE 300 VIDAS)", "vol": 8}], "uf26": [{"uf": "SP", "vol": 25931, "fat": 8199177}, {"uf": "RN", "vol": 6613, "fat": 1997772}, {"uf": "MG", "vol": 4266, "fat": 1126824}, {"uf": "GO", "vol": 3812, "fat": 1206711}, {"uf": "BA", "vol": 3770, "fat": 1526741}, {"uf": "CE", "vol": 3614, "fat": 1603976}, {"uf": "RJ", "vol": 3141, "fat": 948148}, {"uf": "PE", "vol": 3047, "fat": 1070154}], "diretoria": {"2025-HMO": {"vol": 89040, "tk": 338.36}, "2025-PPO": {"vol": 526, "tk": 655.6}, "2026-HMO": {"vol": 67756, "tk": 323.96}, "2026-PPO": {"vol": 653, "tk": 663.2}}, "ult_mes_26": 7, "comp": {"v25": 46164, "f25": 15517966, "v26": 68409, "f26": 22383408, "canc26": 1938}}, "diaria": {"ABRIL": {"label": "Abril 2026", "meta": 11600.0, "realizado": 8996, "dia_real": 30, "dias_no_mes": 30, "parcial": false, "pf": 5631, "pme": 3247, "adesao": 118, "mes_num": 4, "filas": [{"fila": "Carrinho Abandonado Conecta", "leads": 21632, "prod": 10384, "contratos": 1175, "vidas": 1402}, {"fila": "Campanhas Marketing", "leads": 17507, "prod": 5408, "contratos": 291, "vidas": 401}, {"fila": "Conecta", "leads": 17612, "prod": 9606, "contratos": 1110, "vidas": 1326}, {"fila": "Carrinho Abandonado", "leads": 12006, "prod": 5090, "contratos": 616, "vidas": 717}, {"fila": "Espontâneo", "leads": 10273, "prod": 6005, "contratos": 524, "vidas": 709}, {"fila": "Repique Comercial", "leads": 10192, "prod": 3791, "contratos": 240, "vidas": 321}, {"fila": "Eugenia", "leads": 7771, "prod": 4272, "contratos": 1033, "vidas": 1276}, {"fila": "VPC", "leads": 2173, "prod": 678, "contratos": 46, "vidas": 52}, {"fila": "Outros", "leads": 6768, "prod": 3540, "contratos": 335, "vidas": 412}, {"fila": "Leads Frios", "leads": 179, "prod": 74, "contratos": 16, "vidas": 19}, {"fila": "Mídia", "leads": 33, "prod": 16, "contratos": 5, "vidas": 9}, {"fila": "Televendas", "leads": 304, "prod": 166, "contratos": 29, "vidas": 35}, {"fila": "Flamengo", "leads": 3, "prod": 0, "contratos": 0, "vidas": 0}, {"fila": "Eugenia Cotação", "leads": 687, "prod": 324, "contratos": 11, "vidas": 12}]}, "MAIO": {"label": "Maio 2026", "meta": 11600.0, "realizado": 10569, "dia_real": 31, "dias_no_mes": 31, "parcial": false, "pf": 6417, "pme": 3686, "adesao": 466, "mes_num": 5, "filas": [{"fila": "Carrinho Abandonado Conecta", "leads": 21632, "prod": 10384, "contratos": 1175, "vidas": 1402}, {"fila": "Campanhas Marketing", "leads": 17507, "prod": 5408, "contratos": 291, "vidas": 401}, {"fila": "Conecta", "leads": 17612, "prod": 9606, "contratos": 1110, "vidas": 1326}, {"fila": "Carrinho Abandonado", "leads": 12006, "prod": 5090, "contratos": 616, "vidas": 717}, {"fila": "Espontâneo", "leads": 10273, "prod": 6005, "contratos": 524, "vidas": 709}, {"fila": "Repique Comercial", "leads": 10192, "prod": 3791, "contratos": 240, "vidas": 321}, {"fila": "Eugenia", "leads": 7771, "prod": 4272, "contratos": 1033, "vidas": 1276}, {"fila": "VPC", "leads": 2173, "prod": 678, "contratos": 46, "vidas": 52}, {"fila": "Outros", "leads": 6768, "prod": 3540, "contratos": 335, "vidas": 412}, {"fila": "Leads Frios", "leads": 179, "prod": 74, "contratos": 16, "vidas": 19}, {"fila": "Mídia", "leads": 33, "prod": 16, "contratos": 5, "vidas": 9}, {"fila": "Televendas", "leads": 304, "prod": 166, "contratos": 29, "vidas": 35}, {"fila": "Flamengo", "leads": 3, "prod": 0, "contratos": 0, "vidas": 0}, {"fila": "Eugenia Cotação", "leads": 687, "prod": 324, "contratos": 11, "vidas": 12}]}, "JUNHO": {"label": "Junho 2026", "meta": 12360.0, "realizado": 8981, "dia_real": 30, "dias_no_mes": 30, "parcial": false, "pf": 5959, "pme": 2636, "adesao": 386, "mes_num": 6, "filas": [{"fila": "Carrinho Abandonado Conecta", "leads": 21632, "prod": 10384, "contratos": 1175, "vidas": 1402}, {"fila": "Campanhas Marketing", "leads": 17507, "prod": 5408, "contratos": 291, "vidas": 401}, {"fila": "Conecta", "leads": 17612, "prod": 9606, "contratos": 1110, "vidas": 1326}, {"fila": "Carrinho Abandonado", "leads": 12006, "prod": 5090, "contratos": 616, "vidas": 717}, {"fila": "Espontâneo", "leads": 10273, "prod": 6005, "contratos": 524, "vidas": 709}, {"fila": "Repique Comercial", "leads": 10192, "prod": 3791, "contratos": 240, "vidas": 321}, {"fila": "Eugenia", "leads": 7771, "prod": 4272, "contratos": 1033, "vidas": 1276}, {"fila": "VPC", "leads": 2173, "prod": 678, "contratos": 46, "vidas": 52}, {"fila": "Outros", "leads": 6768, "prod": 3540, "contratos": 335, "vidas": 412}, {"fila": "Leads Frios", "leads": 179, "prod": 74, "contratos": 16, "vidas": 19}, {"fila": "Mídia", "leads": 33, "prod": 16, "contratos": 5, "vidas": 9}, {"fila": "Televendas", "leads": 304, "prod": 166, "contratos": 29, "vidas": 35}, {"fila": "Flamengo", "leads": 3, "prod": 0, "contratos": 0, "vidas": 0}, {"fila": "Eugenia Cotação", "leads": 687, "prod": 324, "contratos": 11, "vidas": 12}]}, "JULHO": {"label": "Julho 2026", "meta": 12540.0, "realizado": 7711, "dia_real": 31, "dias_no_mes": 31, "parcial": false, "pf": 4595, "pme": 2790, "adesao": 326, "mes_num": 7, "filas": [{"fila": "Carrinho Abandonado Conecta", "leads": 15923, "prod": 7163, "contratos": 563, "vidas": 682}, {"fila": "Conecta", "leads": 17244, "prod": 10520, "contratos": 965, "vidas": 1167}, {"fila": "Carrinho Abandonado", "leads": 16005, "prod": 7762, "contratos": 692, "vidas": 836}, {"fila": "Outros", "leads": 15995, "prod": 7770, "contratos": 586, "vidas": 723}, {"fila": "Espontâneo", "leads": 11006, "prod": 6389, "contratos": 354, "vidas": 537}, {"fila": "Eugenia", "leads": 5888, "prod": 3377, "contratos": 436, "vidas": 591}, {"fila": "Campanhas Marketing", "leads": 17680, "prod": 7291, "contratos": 265, "vidas": 381}, {"fila": "Repique Comercial", "leads": 19829, "prod": 9120, "contratos": 201, "vidas": 275}, {"fila": "Televendas", "leads": 1078, "prod": 557, "contratos": 77, "vidas": 110}, {"fila": "Leads Frios", "leads": 435, "prod": 205, "contratos": 54, "vidas": 68}, {"fila": "VPC", "leads": 2344, "prod": 802, "contratos": 49, "vidas": 64}, {"fila": "Eugenia Cotação", "leads": 7668, "prod": 3423, "contratos": 102, "vidas": 125}, {"fila": "Mídia", "leads": 9, "prod": 7, "contratos": 2, "vidas": 4}, {"fila": "Flamengo", "leads": 23, "prod": 7, "contratos": 0, "vidas": 0}, {"fila": "Acompanhantes", "leads": 1, "prod": 1, "contratos": 0, "vidas": 0}]}, "AGOSTO": {"label": "Agosto 2026", "meta": 12570.0, "realizado": 685, "dia_real": 30, "dias_no_mes": 31, "parcial": true, "pf": 278, "pme": 384, "adesao": 23, "mes_num": 8, "filas": [{"fila": "Repique Comercial", "leads": 1325, "prod": 960, "contratos": 15, "vidas": 17}, {"fila": "Carrinho Abandonado", "leads": 1310, "prod": 874, "contratos": 75, "vidas": 97}, {"fila": "Conecta", "leads": 1157, "prod": 864, "contratos": 62, "vidas": 72}, {"fila": "VPC", "leads": 1093, "prod": 915, "contratos": 10, "vidas": 11}, {"fila": "Eugenia Cotação", "leads": 1042, "prod": 623, "contratos": 4, "vidas": 4}, {"fila": "Campanhas Marketing", "leads": 855, "prod": 524, "contratos": 21, "vidas": 33}, {"fila": "Outros", "leads": 780, "prod": 529, "contratos": 14, "vidas": 16}, {"fila": "Eugenia", "leads": 685, "prod": 456, "contratos": 22, "vidas": 29}, {"fila": "Espontâneo", "leads": 493, "prod": 355, "contratos": 19, "vidas": 31}, {"fila": "Carrinho Abandonado Conecta", "leads": 299, "prod": 192, "contratos": 31, "vidas": 40}, {"fila": "Leads Frios", "leads": 113, "prod": 66, "contratos": 19, "vidas": 21}, {"fila": "Televendas", "leads": 60, "prod": 37, "contratos": 4, "vidas": 5}, {"fila": "Mídia", "leads": 1, "prod": 1, "contratos": 0, "vidas": 0}]}}, "conv": {"2026-01": {"leads": 138009, "vidas": 8310, "sint": 0, "vinc": 5551, "vinc_sint": 0}, "2026-02": {"leads": 121558, "vidas": 7621, "sint": 0, "vinc": 5416, "vinc_sint": 0}, "2026-03": {"leads": 154032, "vidas": 10822, "sint": 0, "vinc": 7644, "vinc_sint": 0}, "2026-04": {"leads": 127494, "vidas": 8997, "sint": 0, "vinc": 6988, "vinc_sint": 0}, "2026-05": {"leads": 130237, "vidas": 10565, "sint": 0, "vinc": 7703, "vinc_sint": 0}, "2026-06": {"leads": 107039, "vidas": 13349, "sint": 4351, "vinc": 7506, "vinc_sint": 162}, "2026-07": {"leads": 131959, "vidas": 9415, "sint": 1704, "vinc": 5624, "vinc_sint": 1}, "2026-08": {"leads": 9208, "vidas": 687, "sint": 2, "vinc": 555, "vinc_sint": 0}}, "sla": {"2026-06": {"leads": 125727, "pct_sla": 83.9, "pct_2min": 52.9}, "2026-07": {"leads": 160656, "pct_sla": 84.7, "pct_2min": 51.3}, "2026-08": {"leads": 9838, "pct_sla": 83.8, "pct_2min": 42.5}}, "cortes": {"digital": "Jul/2026", "conv": "2026-08-04", "sla": "2026-08-03"}};
 Chart.register(ChartDataLabels);
 
 const css = k => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
@@ -341,6 +361,69 @@ function setSintro(v){
   renderTiles();
   renderTable();
 }
+
+// ── Leads × Conversão por fila (desde Junho; máx. 3 meses = paleta validada) ──
+const fMeses = Object.values(dia)
+  .filter(d=>d.filas && d.filas.length && d.mes_num>=6)
+  .sort((a,b)=>a.mes_num-b.mes_num).slice(-3);
+const fCores = [C.s1, C.s2, css('--s3')];
+const fLabel = d=>d.label.split(' ')[0]+(d.parcial?' (parcial)':'');
+// ordena filas pelo volume de leads do último mês FECHADO (fallback: último)
+const fRef = [...fMeses].reverse().find(d=>!d.parcial) || fMeses[fMeses.length-1];
+const fOrdem = [...fRef.filas].sort((a,b)=>b.leads-a.leads).map(f=>f.fila);
+// inclui filas que só existem em outros meses (vão para o fim)
+fMeses.forEach(d=>d.filas.forEach(f=>{ if(!fOrdem.includes(f.fila)) fOrdem.push(f.fila); }));
+const TOPN = 9;
+const fTop = fOrdem.slice(0, TOPN);
+const fResto = fOrdem.slice(TOPN);
+const fRotulos = fResto.length ? [...fTop, 'Demais filas ('+fResto.length+')'] : fTop;
+const fVal = (d, fila, campo) => {                       // valor de um campo p/ fila (ou agregado das demais)
+  if(fila.startsWith('Demais filas')) return fResto.reduce((s,fl)=>{
+    const x=d.filas.find(f=>f.fila===fl); return s+(x?x[campo]:0);},0);
+  const x = d.filas.find(f=>f.fila===fila); return x ? x[campo] : 0;
+};
+const fConv = (d, fila) => { const l=fVal(d,fila,'leads'); return l ? 100*fVal(d,fila,'vidas')/l : 0; };
+
+document.getElementById('hintFila').textContent =
+  'Leads distribuídos e conversão em vidas por fila de origem ('+
+  fMeses.map(fLabel).join(' · ')+' — base Vendas Diária/Conversão). Barras agrupadas por mês; "Demais filas" agrega as menores.';
+
+new Chart(chFilaLeads, {type:'bar', data:{labels:fRotulos, datasets:fMeses.map((d,i)=>(
+  {label:fLabel(d), data:fRotulos.map(f=>fVal(d,f,'leads')), backgroundColor:fCores[i],
+   borderRadius:3, maxBarThickness:14,
+   datalabels:{display:c=>c.dataset.data[c.dataIndex]>0, anchor:'end', align:'end',
+     color:C.ink2, font:{size:9.5}, formatter:fmtK}}))},
+ options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, layout:{padding:{right:40}},
+  plugins:{legend:{position:'top', align:'end'},
+    tooltip:{callbacks:{label:c=>{
+      const d=fMeses[c.datasetIndex], f=fRotulos[c.dataIndex];
+      return ' '+c.dataset.label+': '+fmtN(c.raw)+' leads · '+fmtN(fVal(d,f,'vidas'))+' vidas';}}}},
+  scales:{x:{grid:{color:C.grid}, border:{display:false}, ticks:{callback:fmtK}},
+          y:{grid:{display:false}, border:{color:C.axis}}}
+}});
+
+new Chart(chFilaConv, {type:'bar', data:{labels:fRotulos, datasets:fMeses.map((d,i)=>(
+  {label:fLabel(d), data:fRotulos.map(f=>fConv(d,f)), backgroundColor:fCores[i],
+   borderRadius:3, maxBarThickness:14,
+   datalabels:{display:c=>c.dataset.data[c.dataIndex]>0, anchor:'end', align:'end',
+     color:C.ink2, font:{size:9.5}, formatter:v=>fmtP(v)}}))},
+ options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, layout:{padding:{right:46}},
+  plugins:{legend:{position:'top', align:'end'},
+    tooltip:{callbacks:{label:c=>{
+      const d=fMeses[c.datasetIndex], f=fRotulos[c.dataIndex];
+      return ' '+c.dataset.label+': '+fmtP(c.raw)+' ('+fmtN(fVal(d,f,'vidas'))+' vidas / '+fmtN(fVal(d,f,'leads'))+' leads)';}}}},
+  scales:{x:{grid:{color:C.grid}, border:{display:false}, ticks:{callback:v=>v+'%'}},
+          y:{grid:{display:false}, border:{color:C.axis}}}
+}});
+
+// tabela completa por fila (todas, sem agregação)
+document.getElementById('tblFila').innerHTML =
+  '<tr><th>Fila</th>'+fMeses.map(d=>'<th colspan="3">'+fLabel(d)+'</th>').join('')+'</tr>'+
+  '<tr><th></th>'+fMeses.map(()=>'<th>Leads</th><th>Vidas</th><th>Conv.</th>').join('')+'</tr>'+
+  fOrdem.map(f=>'<tr><td>'+f+'</td>'+fMeses.map(d=>{
+    const l=fVal(d,f,'leads'), v=fVal(d,f,'vidas');
+    return '<td>'+(l?fmtN(l):'—')+'</td><td>'+(l?fmtN(v):'—')+'</td><td>'+(l?fmtP(100*v/l):'—')+'</td>';
+  }).join('')+'</tr>').join('');
 
 // ── SLA tiles ──
 document.getElementById('slaTiles').innerHTML = slaMeses.map(m=>{
