@@ -87,7 +87,7 @@ footer{max-width:1240px;margin:0 auto;padding:0 22px 30px;font-size:11.5px;color
   <div class="grid2">
     <div class="card" style="grid-column:1/-1">
       <h2>Vendas por mês — 2025 × 2026</h2>
-      <div class="hint">Base oficial Vendas Digital (até Jun/2026); Julho/2026 é prévia da base de Conversão, sujeita a ajuste.</div>
+      <div class="hint" id="hintVendas"></div>
       <div class="chart-box tall"><canvas id="chVendas"></canvas></div>
     </div>
   </div>
@@ -129,7 +129,7 @@ footer{max-width:1240px;margin:0 auto;padding:0 22px 30px;font-size:11.5px;color
     </div>
     <div class="card">
       <h2>Ticket médio — HMO × PPO</h2>
-      <div class="hint">Base Vendas Digital 2026 (até Jun).</div>
+      <div class="hint" id="hintPPO"></div>
       <div class="slagrid" id="ppoTiles"></div>
     </div>
   </div>
@@ -137,12 +137,12 @@ footer{max-width:1240px;margin:0 auto;padding:0 22px 30px;font-size:11.5px;color
   <div class="grid2">
     <div class="card">
       <h2>Mix por canal — 2026</h2>
-      <div class="hint">Volume de vendas por canal (Vendas Digital, até Jun).</div>
+      <div class="hint" id="hintCanal"></div>
       <div class="chart-box short"><canvas id="chCanal"></canvas></div>
     </div>
     <div class="card">
       <h2>Top UFs — 2026</h2>
-      <div class="hint">Volume de vendas por UF (Vendas Digital, até Jun).</div>
+      <div class="hint" id="hintUF"></div>
       <div class="chart-box short"><canvas id="chUF"></canvas></div>
     </div>
   </div>
@@ -156,7 +156,7 @@ footer{max-width:1240px;margin:0 auto;padding:0 22px 30px;font-size:11.5px;color
 <footer id="foot"></footer>
 
 <script>
-const DATA = {"gerado_em": "04/08/2026 21:45", "mes_atual": "2026-08", "digital": {"mensal": {"2025-01": {"vol": 5402, "fat": 1899759, "canc": 2852}, "2025-02": {"vol": 5420, "fat": 1877847, "canc": 2831}, "2025-03": {"vol": 6065, "fat": 2089478, "canc": 3138}, "2025-04": {"vol": 6079, "fat": 2091262, "canc": 2854}, "2025-05": {"vol": 6828, "fat": 2234601, "canc": 2967}, "2025-06": {"vol": 7848, "fat": 2576341, "canc": 3258}, "2025-07": {"vol": 8522, "fat": 2748678, "canc": 3556}, "2025-08": {"vol": 8770, "fat": 3076911, "canc": 3349}, "2025-09": {"vol": 9675, "fat": 3307250, "canc": 3461}, "2025-10": {"vol": 9454, "fat": 3371571, "canc": 3089}, "2025-11": {"vol": 8259, "fat": 2737490, "canc": 2376}, "2025-12": {"vol": 7244, "fat": 2461398, "canc": 1644}, "2026-01": {"vol": 8310, "fat": 2714403, "canc": 706}, "2026-02": {"vol": 7621, "fat": 2472570, "canc": 433}, "2026-03": {"vol": 10822, "fat": 3578333, "canc": 416}, "2026-04": {"vol": 8997, "fat": 3057501, "canc": 155}, "2026-05": {"vol": 10503, "fat": 3480166, "canc": 54}, "2026-06": {"vol": 13349, "fat": 4225367, "canc": 150}}, "canal26": [{"nome": "01-INDIVIDUAL", "vol": 33270}, {"nome": "02-PIM (IND/3-29 VIDAS)", "vol": 19717}, {"nome": "07-ADMINISTRADORA", "vol": 5745}, {"nome": "03-MIDDLE I(30-99 VIDAS)", "vol": 810}, {"nome": "04-MIDDLE II(100-299 VIDAS)", "vol": 52}, {"nome": "05-CORPORE (ALEM DE 300 VIDAS)", "vol": 8}], "uf26": [{"uf": "SP", "vol": 23121, "fat": 7337301}, {"uf": "RN", "vol": 5124, "fat": 1545479}, {"uf": "MG", "vol": 3642, "fat": 971973}, {"uf": "GO", "vol": 3325, "fat": 1055457}, {"uf": "BA", "vol": 3308, "fat": 1331365}, {"uf": "CE", "vol": 3233, "fat": 1441945}, {"uf": "RJ", "vol": 2860, "fat": 854674}, {"uf": "PE", "vol": 2620, "fat": 915828}], "diretoria": {"2025-HMO": {"vol": 89040, "tk": 338.36}, "2025-PPO": {"vol": 526, "tk": 655.6}, "2026-HMO": {"vol": 59044, "tk": 324.44}, "2026-PPO": {"vol": 558, "tk": 666.33}}, "ult_mes_26": 6, "comp": {"v25": 37642, "f25": 12769288, "v26": 59602, "f26": 19528340, "canc26": 1914}}, "diaria": {"ABRIL": {"label": "Abril 2026", "meta": 11600.0, "realizado": 8996, "dia_real": 30, "dias_no_mes": 30, "parcial": false, "pf": 5631, "pme": 3247, "adesao": 118}, "MAIO": {"label": "Maio 2026", "meta": 11600.0, "realizado": 10569, "dia_real": 31, "dias_no_mes": 31, "parcial": false, "pf": 6417, "pme": 3686, "adesao": 466}, "JUNHO": {"label": "Junho 2026", "meta": 12360.0, "realizado": 8981, "dia_real": 30, "dias_no_mes": 30, "parcial": false, "pf": 5959, "pme": 2636, "adesao": 386}, "JULHO": {"label": "Julho 2026", "meta": 12540.0, "realizado": 7711, "dia_real": 31, "dias_no_mes": 31, "parcial": false, "pf": 4595, "pme": 2790, "adesao": 326}, "AGOSTO": {"label": "Agosto 2026", "meta": 12570.0, "realizado": 685, "dia_real": 30, "dias_no_mes": 31, "parcial": true, "pf": 278, "pme": 384, "adesao": 23}}, "conv": {"2026-01": {"leads": 138009, "vidas": 8310, "sint": 0, "vinc": 5551, "vinc_sint": 0}, "2026-02": {"leads": 121558, "vidas": 7621, "sint": 0, "vinc": 5416, "vinc_sint": 0}, "2026-03": {"leads": 154032, "vidas": 10822, "sint": 0, "vinc": 7644, "vinc_sint": 0}, "2026-04": {"leads": 127494, "vidas": 8997, "sint": 0, "vinc": 6988, "vinc_sint": 0}, "2026-05": {"leads": 130237, "vidas": 10565, "sint": 0, "vinc": 7703, "vinc_sint": 0}, "2026-06": {"leads": 107039, "vidas": 13349, "sint": 4351, "vinc": 7506, "vinc_sint": 162}, "2026-07": {"leads": 131959, "vidas": 9415, "sint": 1704, "vinc": 5624, "vinc_sint": 1}, "2026-08": {"leads": 9208, "vidas": 687, "sint": 2, "vinc": 555, "vinc_sint": 0}}, "sla": {"2026-06": {"leads": 125727, "pct_sla": 83.9, "pct_2min": 52.9}, "2026-07": {"leads": 160656, "pct_sla": 84.7, "pct_2min": 51.3}, "2026-08": {"leads": 9838, "pct_sla": 83.8, "pct_2min": 42.5}}, "cortes": {"digital": "Jun/2026", "conv": "2026-08-04", "sla": "2026-08-03"}};
+const DATA = {"gerado_em": "04/08/2026 22:16", "mes_atual": "2026-08", "digital": {"mensal": {"2025-01": {"vol": 5402, "fat": 1899759, "canc": 2852}, "2025-02": {"vol": 5420, "fat": 1877847, "canc": 2831}, "2025-03": {"vol": 6065, "fat": 2089478, "canc": 3138}, "2025-04": {"vol": 6079, "fat": 2091262, "canc": 2854}, "2025-05": {"vol": 6828, "fat": 2234601, "canc": 2967}, "2025-06": {"vol": 7848, "fat": 2576341, "canc": 3258}, "2025-07": {"vol": 8522, "fat": 2748678, "canc": 3556}, "2025-08": {"vol": 8770, "fat": 3076911, "canc": 3349}, "2025-09": {"vol": 9675, "fat": 3307250, "canc": 3461}, "2025-10": {"vol": 9454, "fat": 3371571, "canc": 3089}, "2025-11": {"vol": 8259, "fat": 2737490, "canc": 2376}, "2025-12": {"vol": 7244, "fat": 2461398, "canc": 1644}, "2026-01": {"vol": 8310, "fat": 2714403, "canc": 706}, "2026-02": {"vol": 7621, "fat": 2472570, "canc": 433}, "2026-03": {"vol": 10822, "fat": 3578333, "canc": 416}, "2026-04": {"vol": 8997, "fat": 3057501, "canc": 155}, "2026-05": {"vol": 10503, "fat": 3480166, "canc": 54}, "2026-06": {"vol": 13349, "fat": 4225367, "canc": 150}, "2026-07": {"vol": 8807, "fat": 2855068, "canc": 24}}, "canal26": [{"nome": "01-INDIVIDUAL", "vol": 37515}, {"nome": "02-PIM (IND/3-29 VIDAS)", "vol": 22421}, {"nome": "07-ADMINISTRADORA", "vol": 7507}, {"nome": "03-MIDDLE I(30-99 VIDAS)", "vol": 906}, {"nome": "04-MIDDLE II(100-299 VIDAS)", "vol": 52}, {"nome": "05-CORPORE (ALEM DE 300 VIDAS)", "vol": 8}], "uf26": [{"uf": "SP", "vol": 25931, "fat": 8199177}, {"uf": "RN", "vol": 6613, "fat": 1997772}, {"uf": "MG", "vol": 4266, "fat": 1126824}, {"uf": "GO", "vol": 3812, "fat": 1206711}, {"uf": "BA", "vol": 3770, "fat": 1526741}, {"uf": "CE", "vol": 3614, "fat": 1603976}, {"uf": "RJ", "vol": 3141, "fat": 948148}, {"uf": "PE", "vol": 3047, "fat": 1070154}], "diretoria": {"2025-HMO": {"vol": 89040, "tk": 338.36}, "2025-PPO": {"vol": 526, "tk": 655.6}, "2026-HMO": {"vol": 67756, "tk": 323.96}, "2026-PPO": {"vol": 653, "tk": 663.2}}, "ult_mes_26": 7, "comp": {"v25": 46164, "f25": 15517966, "v26": 68409, "f26": 22383408, "canc26": 1938}}, "diaria": {"ABRIL": {"label": "Abril 2026", "meta": 11600.0, "realizado": 8996, "dia_real": 30, "dias_no_mes": 30, "parcial": false, "pf": 5631, "pme": 3247, "adesao": 118}, "MAIO": {"label": "Maio 2026", "meta": 11600.0, "realizado": 10569, "dia_real": 31, "dias_no_mes": 31, "parcial": false, "pf": 6417, "pme": 3686, "adesao": 466}, "JUNHO": {"label": "Junho 2026", "meta": 12360.0, "realizado": 8981, "dia_real": 30, "dias_no_mes": 30, "parcial": false, "pf": 5959, "pme": 2636, "adesao": 386}, "JULHO": {"label": "Julho 2026", "meta": 12540.0, "realizado": 7711, "dia_real": 31, "dias_no_mes": 31, "parcial": false, "pf": 4595, "pme": 2790, "adesao": 326}, "AGOSTO": {"label": "Agosto 2026", "meta": 12570.0, "realizado": 685, "dia_real": 30, "dias_no_mes": 31, "parcial": true, "pf": 278, "pme": 384, "adesao": 23}}, "conv": {"2026-01": {"leads": 138009, "vidas": 8310, "sint": 0, "vinc": 5551, "vinc_sint": 0}, "2026-02": {"leads": 121558, "vidas": 7621, "sint": 0, "vinc": 5416, "vinc_sint": 0}, "2026-03": {"leads": 154032, "vidas": 10822, "sint": 0, "vinc": 7644, "vinc_sint": 0}, "2026-04": {"leads": 127494, "vidas": 8997, "sint": 0, "vinc": 6988, "vinc_sint": 0}, "2026-05": {"leads": 130237, "vidas": 10565, "sint": 0, "vinc": 7703, "vinc_sint": 0}, "2026-06": {"leads": 107039, "vidas": 13349, "sint": 4351, "vinc": 7506, "vinc_sint": 162}, "2026-07": {"leads": 131959, "vidas": 9415, "sint": 1704, "vinc": 5624, "vinc_sint": 1}, "2026-08": {"leads": 9208, "vidas": 687, "sint": 2, "vinc": 555, "vinc_sint": 0}}, "sla": {"2026-06": {"leads": 125727, "pct_sla": 83.9, "pct_2min": 52.9}, "2026-07": {"leads": 160656, "pct_sla": 84.7, "pct_2min": 51.3}, "2026-08": {"leads": 9838, "pct_sla": 83.8, "pct_2min": 42.5}}, "cortes": {"digital": "Jul/2026", "conv": "2026-08-04", "sla": "2026-08-03"}};
 Chart.register(ChartDataLabels);
 
 const css = k => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
@@ -178,6 +178,11 @@ const fmtP = v => v.toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
 const MES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
 const dig = DATA.digital, conv = DATA.conv, sla = DATA.sla, dia = DATA.diaria;
+const ULT = MES[dig.ult_mes_26-1];          // último mês oficial da base Vendas Digital
+const RANGE = 'Jan–'+ULT;                   // janela YTD comparável (ex.: "Jan–Jul")
+// mês de prévia = mês seguinte ao oficial, desde que não seja o mês corrente (parcial)
+const prevKey = '2026-'+String(dig.ult_mes_26+1).padStart(2,'0');
+const temPrevia = !!conv[prevKey] && prevKey !== DATA.mes_atual;
 
 // ── badges (datas de corte por fonte) ──
 document.getElementById('stamp').textContent = 'Dados consolidados em '+DATA.gerado_em;
@@ -213,30 +218,39 @@ const dv = 100*(cp.v26-cp.v25)/cp.v25, df = 100*(cp.f26-cp.f25)/cp.f25, dtk = 10
 const arrow = d => d>=0 ? '<span class="up">▲ '+fmtP(Math.abs(d))+'</span>' : '<span class="dn">▼ '+fmtP(Math.abs(d))+'</span>';
 function renderTiles(){
 document.getElementById('tiles').innerHTML = [
-  {l:'Vendas 2026 <small>(Jan–Jun)</small>', v:fmtN(cp.v26), d:arrow(dv)+' vs Jan–Jun/25 ('+fmtN(cp.v25)+')'},
-  {l:'Faturamento 2026', v:fmtR(cp.f26), d:arrow(df)+' vs Jan–Jun/25'},
+  {l:'Vendas 2026 <small>('+RANGE+')</small>', v:fmtN(cp.v26), d:arrow(dv)+' vs '+RANGE+'/25 ('+fmtN(cp.v25)+')'},
+  {l:'Faturamento 2026', v:fmtR(cp.f26), d:arrow(df)+' vs '+RANGE+'/25'},
   {l:'Ticket médio 2026', v:'R$ '+tk26.toLocaleString('pt-BR',{maximumFractionDigits:2}), d:arrow(dtk)+' vs 2025 (R$ '+tk25.toLocaleString('pt-BR',{maximumFractionDigits:2})+')'},
-  {l:'Conversão geral 2026'+(SINTRO?'':' <small>(sem Sintro)</small>'), v:fmtP(convYTD()), d:'Σvidas ÷ Σleads · Jan–Jun'+(SINTRO?'':' · excl. Sintro')},
+  {l:'Conversão geral 2026'+(SINTRO?'':' <small>(sem Sintro)</small>'), v:fmtP(convYTD()), d:'Σvidas ÷ Σleads · '+RANGE+(SINTRO?'':' · excl. Sintro')},
   {l:'SLA '+MES[+slaKpiMes.slice(5)-1], v:fmtP(lastSla.pct_sla), d:fmtP(lastSla.pct_2min)+' atendidos em ≤ 2 min'},
   {l:'Meta RMSP — '+dUlt.label.split(' ')[0], v:fmtP(100*dUlt.realizado/dUlt.meta), d:fmtN(dUlt.realizado)+' de '+fmtN(dUlt.meta)+' vidas'},
 ].map(t=>'<div class="tile"><div class="lbl">'+t.l+'</div><div class="val">'+t.v+'</div><div class="dlt">'+t.d+'</div></div>').join('');
 }
 renderTiles();
 
+// ── hints dinâmicos (seguem o último mês oficial) ──
+const MESL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+document.getElementById('hintVendas').textContent = 'Base oficial Vendas Digital (até '+ULT+'/2026)'+
+  (temPrevia ? '; '+MESL[dig.ult_mes_26]+'/2026 é prévia da base de Conversão, sujeita a ajuste.' : '.');
+document.getElementById('hintPPO').textContent = 'Base Vendas Digital 2026 (até '+ULT+').';
+document.getElementById('hintCanal').textContent = 'Volume de vendas por canal (Vendas Digital, até '+ULT+').';
+document.getElementById('hintUF').textContent = 'Volume de vendas por UF (Vendas Digital, até '+ULT+').';
+
 // ── Vendas mensais 25×26 ──
 const v25 = MES.map((_,i)=> (dig.mensal['2025-'+String(i+1).padStart(2,'0')]||{}).vol ?? null);
 const v26 = MES.map((_,i)=> i+1<=dig.ult_mes_26 ? (dig.mensal['2026-'+String(i+1).padStart(2,'0')]||{}).vol ?? null : null);
 const prev26 = MES.map((_,i)=> {
-  if(i+1<=dig.ult_mes_26) return null;
-  const c = conv['2026-'+String(i+1).padStart(2,'0')];
-  return (c && i+1===dig.ult_mes_26+1) ? c.vidas : null;   // só o mês seguinte ao oficial
+  const k = '2026-'+String(i+1).padStart(2,'0');
+  return (temPrevia && k===prevKey) ? conv[k].vidas : null;
 });
-new Chart(chVendas, {type:'bar', data:{labels:MES, datasets:[
+const dsVendas = [
   {label:'2025', data:v25, backgroundColor:C.s1, borderRadius:4, maxBarThickness:22},
   {label:'2026', data:v26, backgroundColor:C.s2, borderRadius:4, maxBarThickness:22},
+];
+if(temPrevia) dsVendas.push(
   {label:'2026 (prévia)', data:prev26, backgroundColor:C.s2soft, borderColor:C.s2,
-   borderWidth:{top:2,left:2,right:2,bottom:0}, borderRadius:4, maxBarThickness:22, borderDash:[4,3]},
-]}, options:{
+   borderWidth:{top:2,left:2,right:2,bottom:0}, borderRadius:4, maxBarThickness:22, borderDash:[4,3]});
+new Chart(chVendas, {type:'bar', data:{labels:MES, datasets:dsVendas}, options:{
   responsive:true, maintainAspectRatio:false,
   plugins:{legend:{position:'top', align:'end'},
     tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+fmtN(c.raw)+' vidas'}}},
@@ -399,7 +413,7 @@ document.getElementById('foot').innerHTML =
   'Fontes: <b>Vendas Digital 2025–2026</b> (vendas-digital-2025-2026.vercel.app · base oficial, até '+DATA.cortes.digital+
   ') · <b>Vendas Diária RMSP</b> (vendas-diaria-deploy.vercel.app) · <b>Conversão Time</b> (conversao-time.vercel.app · carga '+
   (DATA.cortes.conv||'').split('-').reverse().join('/')+') · <b>SLA/Atendimento</b> (atendimento-hapvida.vercel.app).<br>'+
-  'Cancelamentos 2026 até Jun: '+fmtN(dig.comp.canc26)+' ('+fmtP(100*dig.comp.canc26/dig.comp.v26)+') — número imaturo: cancelamentos são registrados ao longo do tempo, não comparável ao histórico 2025.';
+  'Cancelamentos 2026 até '+ULT+': '+fmtN(dig.comp.canc26)+' ('+fmtP(100*dig.comp.canc26/dig.comp.v26)+') — número imaturo: cancelamentos são registrados ao longo do tempo, não comparável ao histórico 2025.';
 </script>
 </body>
 </html>
