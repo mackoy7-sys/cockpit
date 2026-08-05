@@ -87,7 +87,7 @@ footer{max-width:1240px;margin:0 auto;padding:0 22px 30px;font-size:11.5px;color
   <div class="grid2">
     <div class="card" style="grid-column:1/-1">
       <h2>Vendas por mês — 2025 × 2026</h2>
-      <div class="hint">Base oficial Vendas Digital (até Jun/2026); Julho/2026 é prévia da base de Conversão, sujeita a ajuste.</div>
+      <div class="hint" id="hintVendas"></div>
       <div class="chart-box tall"><canvas id="chVendas"></canvas></div>
     </div>
   </div>
@@ -129,7 +129,7 @@ footer{max-width:1240px;margin:0 auto;padding:0 22px 30px;font-size:11.5px;color
     </div>
     <div class="card">
       <h2>Ticket médio — HMO × PPO</h2>
-      <div class="hint">Base Vendas Digital 2026 (até Jun).</div>
+      <div class="hint" id="hintPPO"></div>
       <div class="slagrid" id="ppoTiles"></div>
     </div>
   </div>
@@ -137,12 +137,12 @@ footer{max-width:1240px;margin:0 auto;padding:0 22px 30px;font-size:11.5px;color
   <div class="grid2">
     <div class="card">
       <h2>Mix por canal — 2026</h2>
-      <div class="hint">Volume de vendas por canal (Vendas Digital, até Jun).</div>
+      <div class="hint" id="hintCanal"></div>
       <div class="chart-box short"><canvas id="chCanal"></canvas></div>
     </div>
     <div class="card">
       <h2>Top UFs — 2026</h2>
-      <div class="hint">Volume de vendas por UF (Vendas Digital, até Jun).</div>
+      <div class="hint" id="hintUF"></div>
       <div class="chart-box short"><canvas id="chUF"></canvas></div>
     </div>
   </div>
@@ -178,6 +178,11 @@ const fmtP = v => v.toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
 const MES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
 const dig = DATA.digital, conv = DATA.conv, sla = DATA.sla, dia = DATA.diaria;
+const ULT = MES[dig.ult_mes_26-1];          // último mês oficial da base Vendas Digital
+const RANGE = 'Jan–'+ULT;                   // janela YTD comparável (ex.: "Jan–Jul")
+// mês de prévia = mês seguinte ao oficial, desde que não seja o mês corrente (parcial)
+const prevKey = '2026-'+String(dig.ult_mes_26+1).padStart(2,'0');
+const temPrevia = !!conv[prevKey] && prevKey !== DATA.mes_atual;
 
 // ── badges (datas de corte por fonte) ──
 document.getElementById('stamp').textContent = 'Dados consolidados em '+DATA.gerado_em;
@@ -213,30 +218,39 @@ const dv = 100*(cp.v26-cp.v25)/cp.v25, df = 100*(cp.f26-cp.f25)/cp.f25, dtk = 10
 const arrow = d => d>=0 ? '<span class="up">▲ '+fmtP(Math.abs(d))+'</span>' : '<span class="dn">▼ '+fmtP(Math.abs(d))+'</span>';
 function renderTiles(){
 document.getElementById('tiles').innerHTML = [
-  {l:'Vendas 2026 <small>(Jan–Jun)</small>', v:fmtN(cp.v26), d:arrow(dv)+' vs Jan–Jun/25 ('+fmtN(cp.v25)+')'},
-  {l:'Faturamento 2026', v:fmtR(cp.f26), d:arrow(df)+' vs Jan–Jun/25'},
+  {l:'Vendas 2026 <small>('+RANGE+')</small>', v:fmtN(cp.v26), d:arrow(dv)+' vs '+RANGE+'/25 ('+fmtN(cp.v25)+')'},
+  {l:'Faturamento 2026', v:fmtR(cp.f26), d:arrow(df)+' vs '+RANGE+'/25'},
   {l:'Ticket médio 2026', v:'R$ '+tk26.toLocaleString('pt-BR',{maximumFractionDigits:2}), d:arrow(dtk)+' vs 2025 (R$ '+tk25.toLocaleString('pt-BR',{maximumFractionDigits:2})+')'},
-  {l:'Conversão geral 2026'+(SINTRO?'':' <small>(sem Sintro)</small>'), v:fmtP(convYTD()), d:'Σvidas ÷ Σleads · Jan–Jun'+(SINTRO?'':' · excl. Sintro')},
+  {l:'Conversão geral 2026'+(SINTRO?'':' <small>(sem Sintro)</small>'), v:fmtP(convYTD()), d:'Σvidas ÷ Σleads · '+RANGE+(SINTRO?'':' · excl. Sintro')},
   {l:'SLA '+MES[+slaKpiMes.slice(5)-1], v:fmtP(lastSla.pct_sla), d:fmtP(lastSla.pct_2min)+' atendidos em ≤ 2 min'},
   {l:'Meta RMSP — '+dUlt.label.split(' ')[0], v:fmtP(100*dUlt.realizado/dUlt.meta), d:fmtN(dUlt.realizado)+' de '+fmtN(dUlt.meta)+' vidas'},
 ].map(t=>'<div class="tile"><div class="lbl">'+t.l+'</div><div class="val">'+t.v+'</div><div class="dlt">'+t.d+'</div></div>').join('');
 }
 renderTiles();
 
+// ── hints dinâmicos (seguem o último mês oficial) ──
+const MESL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+document.getElementById('hintVendas').textContent = 'Base oficial Vendas Digital (até '+ULT+'/2026)'+
+  (temPrevia ? '; '+MESL[dig.ult_mes_26]+'/2026 é prévia da base de Conversão, sujeita a ajuste.' : '.');
+document.getElementById('hintPPO').textContent = 'Base Vendas Digital 2026 (até '+ULT+').';
+document.getElementById('hintCanal').textContent = 'Volume de vendas por canal (Vendas Digital, até '+ULT+').';
+document.getElementById('hintUF').textContent = 'Volume de vendas por UF (Vendas Digital, até '+ULT+').';
+
 // ── Vendas mensais 25×26 ──
 const v25 = MES.map((_,i)=> (dig.mensal['2025-'+String(i+1).padStart(2,'0')]||{}).vol ?? null);
 const v26 = MES.map((_,i)=> i+1<=dig.ult_mes_26 ? (dig.mensal['2026-'+String(i+1).padStart(2,'0')]||{}).vol ?? null : null);
 const prev26 = MES.map((_,i)=> {
-  if(i+1<=dig.ult_mes_26) return null;
-  const c = conv['2026-'+String(i+1).padStart(2,'0')];
-  return (c && i+1===dig.ult_mes_26+1) ? c.vidas : null;   // só o mês seguinte ao oficial
+  const k = '2026-'+String(i+1).padStart(2,'0');
+  return (temPrevia && k===prevKey) ? conv[k].vidas : null;
 });
-new Chart(chVendas, {type:'bar', data:{labels:MES, datasets:[
+const dsVendas = [
   {label:'2025', data:v25, backgroundColor:C.s1, borderRadius:4, maxBarThickness:22},
   {label:'2026', data:v26, backgroundColor:C.s2, borderRadius:4, maxBarThickness:22},
+];
+if(temPrevia) dsVendas.push(
   {label:'2026 (prévia)', data:prev26, backgroundColor:C.s2soft, borderColor:C.s2,
-   borderWidth:{top:2,left:2,right:2,bottom:0}, borderRadius:4, maxBarThickness:22, borderDash:[4,3]},
-]}, options:{
+   borderWidth:{top:2,left:2,right:2,bottom:0}, borderRadius:4, maxBarThickness:22, borderDash:[4,3]});
+new Chart(chVendas, {type:'bar', data:{labels:MES, datasets:dsVendas}, options:{
   responsive:true, maintainAspectRatio:false,
   plugins:{legend:{position:'top', align:'end'},
     tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+fmtN(c.raw)+' vidas'}}},
@@ -399,7 +413,7 @@ document.getElementById('foot').innerHTML =
   'Fontes: <b>Vendas Digital 2025–2026</b> (vendas-digital-2025-2026.vercel.app · base oficial, até '+DATA.cortes.digital+
   ') · <b>Vendas Diária RMSP</b> (vendas-diaria-deploy.vercel.app) · <b>Conversão Time</b> (conversao-time.vercel.app · carga '+
   (DATA.cortes.conv||'').split('-').reverse().join('/')+') · <b>SLA/Atendimento</b> (atendimento-hapvida.vercel.app).<br>'+
-  'Cancelamentos 2026 até Jun: '+fmtN(dig.comp.canc26)+' ('+fmtP(100*dig.comp.canc26/dig.comp.v26)+') — número imaturo: cancelamentos são registrados ao longo do tempo, não comparável ao histórico 2025.';
+  'Cancelamentos 2026 até '+ULT+': '+fmtN(dig.comp.canc26)+' ('+fmtP(100*dig.comp.canc26/dig.comp.v26)+') — número imaturo: cancelamentos são registrados ao longo do tempo, não comparável ao histórico 2025.';
 </script>
 </body>
 </html>
