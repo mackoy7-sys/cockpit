@@ -180,7 +180,7 @@ const MES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','
 const dig = DATA.digital, conv = DATA.conv, sla = DATA.sla, dia = DATA.diaria;
 
 // ── badges (datas de corte por fonte) ──
-document.getElementById('stamp').textContent = 'Gerado em '+DATA.gerado_em+' · preview local';
+document.getElementById('stamp').textContent = 'Dados consolidados em '+DATA.gerado_em;
 const slaMeses = Object.keys(sla).sort();
 document.getElementById('badges').innerHTML = [
   ['Vendas Digital', 'oficial até <b>'+DATA.cortes.digital+'</b>'],
@@ -399,8 +399,7 @@ document.getElementById('foot').innerHTML =
   'Fontes: <b>Vendas Digital 2025–2026</b> (vendas-digital-2025-2026.vercel.app · base oficial, até '+DATA.cortes.digital+
   ') · <b>Vendas Diária RMSP</b> (vendas-diaria-deploy.vercel.app) · <b>Conversão Time</b> (conversao-time.vercel.app · carga '+
   (DATA.cortes.conv||'').split('-').reverse().join('/')+') · <b>SLA/Atendimento</b> (atendimento-hapvida.vercel.app).<br>'+
-  'Cancelamentos 2026 até Jun: '+fmtN(dig.comp.canc26)+' ('+fmtP(100*dig.comp.canc26/dig.comp.v26)+') — número imaturo: cancelamentos são registrados ao longo do tempo, não comparável ao histórico 2025.<br>'+
-  'Preview local — este cockpit ainda não foi publicado.';
+  'Cancelamentos 2026 até Jun: '+fmtN(dig.comp.canc26)+' ('+fmtP(100*dig.comp.canc26/dig.comp.v26)+') — número imaturo: cancelamentos são registrados ao longo do tempo, não comparável ao histórico 2025.';
 </script>
 </body>
 </html>
