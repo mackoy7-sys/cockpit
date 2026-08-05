@@ -18,6 +18,7 @@ from collections import defaultdict, Counter
 HOME = os.path.expanduser('~')
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'index.html')
 VENDAS_LOCAL = os.path.join(HOME, 'vendas-deploy', 'index.html')
+VENDAS_URL = 'https://vendas-digital-2025-2026.vercel.app/'
 
 def fetch(url, binary=False):
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -53,7 +54,11 @@ def balanced_json(text, start_marker, open_char='{'):
 # 1. VENDAS DIGITAL (RAW local)
 # ────────────────────────────────────────────────────────────────────
 def agg_vendas_digital():
-    h = open(VENDAS_LOCAL, encoding='utf-8').read()
+    # No Mac usa a base local; no GitHub Actions (ou com COCKPIT_REMOTE=1) baixa da URL pública
+    if os.path.exists(VENDAS_LOCAL) and not os.environ.get('COCKPIT_REMOTE'):
+        h = open(VENDAS_LOCAL, encoding='utf-8').read()
+    else:
+        h = fetch(VENDAS_URL)
     raw = balanced_json(h, 'const RAW=')
     rows, cats = raw['rows'], raw['cats']
     # colunas: 0=ano(0=2025,1=2026) 1=mes 2=canal 3=uf 4=dir 5=faixa 6=plano 7=cid 8=valor 9=cancelado
