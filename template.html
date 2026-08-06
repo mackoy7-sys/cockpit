@@ -201,9 +201,9 @@ const MESL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Ago
 const dig = DATA.digital, conv = DATA.conv, sla = DATA.sla, dia = DATA.diaria;
 const ULT = MES[dig.ult_mes_26-1];          // último mês oficial da base Vendas Digital
 const RANGE = 'Jan–'+ULT;                   // janela YTD comparável (ex.: "Jan–Jul")
-// mês de prévia = mês seguinte ao oficial, desde que não seja o mês corrente (parcial)
-const prevKey = '2026-'+String(dig.ult_mes_26+1).padStart(2,'0');
-const temPrevia = !!conv[prevKey] && prevKey !== DATA.mes_atual;
+// meses "em aberto" = posteriores ao oficial com dados na base de Conversão (inclui o mês corrente)
+const prevKeys = Object.keys(conv).filter(k => +k.slice(5) > dig.ult_mes_26 && conv[k].vidas > 0);
+const temPrevia = prevKeys.length > 0;
 
 // ── badges (datas de corte por fonte) ──
 document.getElementById('stamp').textContent = 'Dados consolidados em '+DATA.gerado_em;
@@ -262,7 +262,7 @@ renderTiles();
 
 // ── hints dinâmicos (seguem o último mês oficial) ──
 document.getElementById('hintVendas').textContent = 'Base oficial Vendas Digital (até '+ULT+'/2026)'+
-  (temPrevia ? '; '+MESL[dig.ult_mes_26]+'/2026 é prévia da base de Conversão, sujeita a ajuste.' : '.');
+  (temPrevia ? '; barra tracejada = mês em aberto (prévia da base de Conversão, sujeita a ajuste).' : '.');
 document.getElementById('hintPPO').textContent = 'Base Vendas Digital 2026 (até '+ULT+').';
 document.getElementById('hintCanal').textContent = 'Volume de vendas por canal (Vendas Digital, até '+ULT+').';
 document.getElementById('hintUF').textContent = 'Volume de vendas por UF (Vendas Digital, até '+ULT+').';
@@ -272,16 +272,33 @@ const v25 = MES.map((_,i)=> (dig.mensal['2025-'+String(i+1).padStart(2,'0')]||{}
 const v26 = MES.map((_,i)=> i+1<=dig.ult_mes_26 ? (dig.mensal['2026-'+String(i+1).padStart(2,'0')]||{}).vol ?? null : null);
 const prev26 = MES.map((_,i)=> {
   const k = '2026-'+String(i+1).padStart(2,'0');
-  return (temPrevia && k===prevKey) ? conv[k].vidas : null;
+  return prevKeys.includes(k) ? conv[k].vidas : null;
 });
+// plugin: contorno tracejado nas barras marcadas com dashedBorder (Chart.js não traceja borda de barra)
+const dashedBars = {id:'dashedBars', afterDatasetsDraw(chart){
+  chart.data.datasets.forEach((ds,di)=>{
+    if(!ds.dashedBorder) return;
+    chart.getDatasetMeta(di).data.forEach((bar,i)=>{
+      if(ds.data[i]==null) return;
+      const {x,y,base,width} = bar.getProps(['x','y','base','width'], true);
+      const ctx = chart.ctx, l = x-width/2, r = x+width/2;
+      ctx.save();
+      ctx.strokeStyle = ds.borderColor; ctx.lineWidth = 1.6; ctx.setLineDash([5,3]);
+      ctx.beginPath();
+      ctx.moveTo(l, base); ctx.lineTo(l, y+2); ctx.quadraticCurveTo(l, y, l+2, y);
+      ctx.lineTo(r-2, y); ctx.quadraticCurveTo(r, y, r, y+2); ctx.lineTo(r, base);
+      ctx.stroke(); ctx.restore();
+    });
+  });
+}};
 const dsVendas = [
   {label:'2025', data:v25, backgroundColor:C.s1, borderRadius:4, maxBarThickness:22},
   {label:'2026', data:v26, backgroundColor:C.s2, borderRadius:4, maxBarThickness:22},
 ];
 if(temPrevia) dsVendas.push(
-  {label:'2026 (prévia)', data:prev26, backgroundColor:C.s2soft, borderColor:C.s2,
-   borderWidth:{top:2,left:2,right:2,bottom:0}, borderRadius:4, maxBarThickness:22, borderDash:[4,3]});
-new Chart(chVendas, {type:'bar', data:{labels:MES, datasets:dsVendas}, options:{
+  {label:'2026 (em aberto)', data:prev26, backgroundColor:C.s2soft, borderColor:C.s2,
+   borderWidth:0, borderRadius:4, maxBarThickness:22, dashedBorder:true});
+new Chart(chVendas, {type:'bar', data:{labels:MES, datasets:dsVendas}, plugins:[dashedBars], options:{
   responsive:true, maintainAspectRatio:false,
   plugins:{legend:{position:'top', align:'end'},
     tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+fmtN(c.raw)+' vidas'}}},
