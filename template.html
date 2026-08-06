@@ -117,11 +117,8 @@ details.inner{border:0;background:transparent;padding:10px 0 0;margin:0}
       <div class="chart-box short"><canvas id="chLeads"></canvas></div>
     </div>
     <div class="card">
-      <div class="cardhead">
-        <h2>Conversão geral — Σvidas ÷ Σleads</h2>
-        <div class="seg"><span>Sintro:</span><button id="sintSim" class="on" onclick="setSintro(true)">Sim</button><button id="sintNao" onclick="setSintro(false)">Não</button></div>
-      </div>
-      <div class="hint">Sempre agregada (nunca média das taxas individuais). Sintro = vendas de projetos que não passam pelo funil de leads — "Não" as exclui do numerador. O filtro também recalcula o KPI e a tabela.</div>
+      <h2>Conversão geral — Σvidas ÷ Σleads</h2>
+      <div class="hint">Sempre agregada (nunca média das taxas individuais) e sempre SEM as vidas Sintro — vendas de projetos que não passam pelo funil de leads. A tabela consolidada mostra também a taxa cheia, para referência.</div>
       <div class="chart-box short"><canvas id="chConv"></canvas></div>
     </div>
   </div>
@@ -215,9 +212,9 @@ document.getElementById('badges').innerHTML = [
   ['SLA', 'até <b>'+(DATA.cortes.sla||'').split('-').reverse().join('/')+'</b>'],
 ].map(([a,b])=>'<span class="badge">'+a+': '+b+'</span>').join('');
 
-// ── Filtro Sintro (vendas de projetos, fora do funil de leads) ──
-let SINTRO = true;                                   // true = incluir Sintro
-const cvV = k => conv[k].vidas - (SINTRO ? 0 : conv[k].sint);
+// ── Conversão SEMPRE exclui as vidas Sintro (vendas de projetos, fora do funil de leads).
+//    Volume de vendas (vidas) segue sempre TOTAL, incluindo Sintro. ──
+const cvV = k => conv[k].vidas - conv[k].sint;
 const cvPct = k => conv[k].leads ? 100*cvV(k)/conv[k].leads : null;
 
 // ── KPIs ──
@@ -245,15 +242,15 @@ if(mv && mv.leads){
   const nomeMV = MESL[+DATA.mes_atual.slice(5)-1];
   const diaMV = Object.values(dia).find(d=>d.parcial);
   mvTiles.push({l:'Vendas '+nomeMV+' <small>(mês vigente · parcial)</small>',
-    v:fmtN(cvV(DATA.mes_atual)),
-    d:fmtN(mv.leads)+' leads · conv. '+fmtP(cvPct(DATA.mes_atual))+
+    v:fmtN(mv.vidas),
+    d:fmtN(mv.leads)+' leads · conv. '+fmtP(cvPct(DATA.mes_atual))+' s/ Sintro'+
       (diaMV && diaMV.meta ? ' · RMSP '+fmtP(100*diaMV.realizado/diaMV.meta)+' da meta' : '')});
 }
 document.getElementById('tiles').innerHTML = [...mvTiles,
   {l:'Vendas 2026 <small>('+RANGE+')</small>', v:fmtN(cp.v26), d:arrow(dv)+' vs '+RANGE+'/25 ('+fmtN(cp.v25)+')'},
   {l:'Faturamento 2026', v:fmtR(cp.f26), d:arrow(df)+' vs '+RANGE+'/25'},
   {l:'Ticket médio 2026', v:'R$ '+tk26.toLocaleString('pt-BR',{maximumFractionDigits:2}), d:arrow(dtk)+' vs 2025 (R$ '+tk25.toLocaleString('pt-BR',{maximumFractionDigits:2})+')'},
-  {l:'Conversão geral 2026'+(SINTRO?'':' <small>(sem Sintro)</small>'), v:fmtP(convYTD()), d:'Σvidas ÷ Σleads · '+RANGE+(SINTRO?'':' · excl. Sintro')},
+  {l:'Conversão geral 2026 <small>(s/ Sintro)</small>', v:fmtP(convYTD()), d:'Σvidas ÷ Σleads · '+RANGE+' · excl. vidas Sintro'},
   {l:'SLA '+MES[+slaKpiMes.slice(5)-1], v:fmtP(lastSla.pct_sla), d:fmtP(lastSla.pct_2min)+' atendidos em ≤ 2 min'},
   {l:'Meta RMSP — '+dUlt.label.split(' ')[0], v:fmtP(100*dUlt.realizado/dUlt.meta), d:fmtN(dUlt.realizado)+' de '+fmtN(dUlt.meta)+' vidas'},
 ].map(t=>'<div class="tile"><div class="lbl">'+t.l+'</div><div class="val">'+t.v+'</div><div class="dlt">'+t.d+'</div></div>').join('');
@@ -374,21 +371,11 @@ const convChart = new Chart(chConv, {type:'line', data:{labels:cLabels, datasets
  options:{responsive:true, maintainAspectRatio:false, layout:{padding:{top:16,right:16}},
   plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>{
     const k=convKeys[c.dataIndex], s=conv[k].sint;
-    return ' '+fmtP(c.raw)+' ('+fmtN(cvV(k))+' vidas / '+fmtN(conv[k].leads)+' leads'+
-      (SINTRO&&s?' · '+fmtN(s)+' Sintro':'')+')';}}}},
+    return ' '+fmtP(c.raw)+' ('+fmtN(cvV(k))+' vidas s/ Sintro / '+fmtN(conv[k].leads)+' leads'+
+      (s?' · '+fmtN(s)+' Sintro excluídas':'')+')';}}}},
   scales:{x:{grid:{display:false}, border:{color:C.axis}},
           y:{grid:{color:C.grid}, border:{display:false}, ticks:{callback:v=>v+'%'}, beginAtZero:true}}
 }});
-
-function setSintro(v){
-  SINTRO = v;
-  document.getElementById('sintSim').classList.toggle('on', v);
-  document.getElementById('sintNao').classList.toggle('on', !v);
-  convChart.data.datasets[0].data = convKeys.map(cvPct);
-  convChart.update();
-  renderTiles();
-  renderTable();
-}
 
 // ── Leads × Conversão por fila (desde Junho; máx. 3 meses = paleta validada) ──
 const fMeses = Object.values(dia)
