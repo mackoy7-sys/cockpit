@@ -36,7 +36,7 @@ header .stamp{font-size:11.5px;opacity:.65}
 .badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .badge{font-size:11.5px;color:var(--ink-2);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:4px 12px}
 .badge b{color:var(--ink)}
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px;margin-bottom:20px}
 .tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
 .tile .lbl{font-size:12px;color:var(--ink-2);margin-bottom:6px}
 .tile .val{font-size:26px;font-weight:700;line-height:1.1}
@@ -196,6 +196,7 @@ const fmtK = v => v>=1e6 ? (v/1e6).toFixed(1).replace('.',',')+'M' : v>=1e3 ? (v
 const fmtR = v => 'R$ '+(v>=1e6 ? (v/1e6).toFixed(1).replace('.',',')+' mi' : fmtN(v));
 const fmtP = v => v.toLocaleString('pt-BR',{maximumFractionDigits:1})+'%';
 const MES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const MESL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
 const dig = DATA.digital, conv = DATA.conv, sla = DATA.sla, dia = DATA.diaria;
 const ULT = MES[dig.ult_mes_26-1];          // último mês oficial da base Vendas Digital
@@ -237,7 +238,18 @@ const tk26 = cp.f26/cp.v26, tk25 = cp.f25/cp.v25;
 const dv = 100*(cp.v26-cp.v25)/cp.v25, df = 100*(cp.f26-cp.f25)/cp.f25, dtk = 100*(tk26-tk25)/tk25;
 const arrow = d => d>=0 ? '<span class="up">▲ '+fmtP(Math.abs(d))+'</span>' : '<span class="dn">▼ '+fmtP(Math.abs(d))+'</span>';
 function renderTiles(){
-document.getElementById('tiles').innerHTML = [
+// card do mês vigente (sempre presente enquanto houver dados do mês na base de Conversão)
+const mvTiles = [];
+const mv = conv[DATA.mes_atual];
+if(mv && mv.leads){
+  const nomeMV = MESL[+DATA.mes_atual.slice(5)-1];
+  const diaMV = Object.values(dia).find(d=>d.parcial);
+  mvTiles.push({l:'Vendas '+nomeMV+' <small>(mês vigente · parcial)</small>',
+    v:fmtN(cvV(DATA.mes_atual)),
+    d:fmtN(mv.leads)+' leads · conv. '+fmtP(cvPct(DATA.mes_atual))+
+      (diaMV && diaMV.meta ? ' · RMSP '+fmtP(100*diaMV.realizado/diaMV.meta)+' da meta' : '')});
+}
+document.getElementById('tiles').innerHTML = [...mvTiles,
   {l:'Vendas 2026 <small>('+RANGE+')</small>', v:fmtN(cp.v26), d:arrow(dv)+' vs '+RANGE+'/25 ('+fmtN(cp.v25)+')'},
   {l:'Faturamento 2026', v:fmtR(cp.f26), d:arrow(df)+' vs '+RANGE+'/25'},
   {l:'Ticket médio 2026', v:'R$ '+tk26.toLocaleString('pt-BR',{maximumFractionDigits:2}), d:arrow(dtk)+' vs 2025 (R$ '+tk25.toLocaleString('pt-BR',{maximumFractionDigits:2})+')'},
@@ -249,7 +261,6 @@ document.getElementById('tiles').innerHTML = [
 renderTiles();
 
 // ── hints dinâmicos (seguem o último mês oficial) ──
-const MESL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 document.getElementById('hintVendas').textContent = 'Base oficial Vendas Digital (até '+ULT+'/2026)'+
   (temPrevia ? '; '+MESL[dig.ult_mes_26]+'/2026 é prévia da base de Conversão, sujeita a ajuste.' : '.');
 document.getElementById('hintPPO').textContent = 'Base Vendas Digital 2026 (até '+ULT+').';
