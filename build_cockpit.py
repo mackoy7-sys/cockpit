@@ -62,19 +62,39 @@ def agg_vendas_digital():
     raw = balanced_json(h, 'const RAW=')
     rows, cats = raw['rows'], raw['cats']
     # colunas: 0=ano(0=2025,1=2026) 1=mes 2=canal 3=uf 4=dir 5=faixa 6=plano 7=cid 8=valor 9=cancelado
+    # schema v2-tenure (desde 13/08/2026): coluna extra 10 = meses até o cancelamento (ignorada aqui)
+    ncols = {len(r) for r in rows[:200]}
+    if not ncols <= {10, 11}:
+        raise ValueError(f'Schema do RAW do Vendas Digital mudou (colunas={sorted(ncols)}) — revisar extração')
     mensal = defaultdict(lambda: dict(vol=0, fat=0.0, canc=0))
+    for r in rows:
+        ano, mes = r[0], r[1]
+        m = mensal[(ano, mes)]
+        m['vol'] += 1; m['fat'] += r[8]; m['canc'] += r[9]
+    ult_mes_26 = max(m for (a, m) in mensal if a == 1)
+    # se o corte da base (meta.corte, schema v2) não cobre o mês inteiro, o último mês
+    # é parcial e NÃO conta como oficial fechado — vira "em aberto" (prévia da Conversão)
+    corte = (raw.get('meta') or {}).get('corte')
+    if corte:
+        import calendar
+        cy, cm, cd = map(int, corte.split('-'))
+        if cy == 2026 and cm == ult_mes_26 and cd < calendar.monthrange(cy, cm)[1]:
+            ult_mes_26 = max(1, ult_mes_26 - 1)
+    # descarta meses de 2026 além do oficial fechado (parcial → tratado como "em aberto" via Conversão)
+    for k in [k for k in mensal if k[0] == 1 and k[1] > ult_mes_26]:
+        del mensal[k]
+    # agregados 2026 (mix, UF, diretoria) só com meses oficiais fechados
     canal26 = Counter(); uf26 = Counter(); fat_uf26 = defaultdict(float)
     diret = defaultdict(lambda: dict(vol=0, fat=0.0))
     for r in rows:
-        ano, mes, cn, uf, dr, fx, pl, cid, vl, cc = r
-        m = mensal[(ano, mes)]
-        m['vol'] += 1; m['fat'] += vl; m['canc'] += cc
+        ano, mes, cn, uf, dr, fx, pl, cid, vl, cc = r[:10]
+        if ano == 1 and mes > ult_mes_26:
+            continue
         d = diret[(ano, cats['dir'][dr])]
         d['vol'] += 1; d['fat'] += vl
         if ano == 1:
             canal26[cats['canal'][cn]] += 1
             uf26[cats['uf'][uf]] += 1; fat_uf26[cats['uf'][uf]] += vl
-    ult_mes_26 = max(m for (a, m) in mensal if a == 1)
     jj25 = [v for (a, m), v in mensal.items() if a == 0 and m <= ult_mes_26]
     return dict(
         mensal={f"{2025+a}-{m:02d}": dict(vol=v['vol'], fat=round(v['fat']), canc=v['canc'])
@@ -85,9 +105,9 @@ def agg_vendas_digital():
                    for (a, d), v in sorted(diret.items())},
         ult_mes_26=ult_mes_26,
         comp=dict(v25=sum(x['vol'] for x in jj25), f25=round(sum(x['fat'] for x in jj25)),
-                  v26=sum(v['vol'] for (a, m), v in mensal.items() if a == 1),
-                  f26=round(sum(v['fat'] for (a, m), v in mensal.items() if a == 1)),
-                  canc26=sum(v['canc'] for (a, m), v in mensal.items() if a == 1)),
+                  v26=sum(v['vol'] for (a, m), v in mensal.items() if a == 1 and m <= ult_mes_26),
+                  f26=round(sum(v['fat'] for (a, m), v in mensal.items() if a == 1 and m <= ult_mes_26)),
+                  canc26=sum(v['canc'] for (a, m), v in mensal.items() if a == 1 and m <= ult_mes_26)),
     )
 
 # ────────────────────────────────────────────────────────────────────
